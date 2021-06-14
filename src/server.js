@@ -11,20 +11,20 @@ import {
   routeNotFoundHandler,
 } from "./middlewares/errors/errorHandling.js";
 
-const server = express();
-const server = createServer(server);
+const app = express();
+const server = createServer(app);
 const io = new Server(server, { allowEI03: true });
 
-server.use(cors());
+app.use(cors());
 // app.use(cors(corsOptions));
 
-server.use(express.json());
+app.use(express.json());
 
 // ROUTES
 
 // ERROR HANDLERS
-server.use(routeNotFoundHandler);
-server.use(errorHandler);
+app.use(routeNotFoundHandler);
+app.use(errorHandler);
 
 // PORT
 const port = process.env.PORT || 3001;
@@ -36,7 +36,7 @@ mongoose
     useFindAndModify: false,
   })
   .then(
-    server.listen(port, () => {
+    app.listen(port, () => {
       console.log("Running on port", port);
     })
   )
