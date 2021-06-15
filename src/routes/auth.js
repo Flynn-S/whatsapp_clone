@@ -75,7 +75,7 @@ authRouter.post("/refreshToken", async (req, res, next) => {
       httpOnly: true,
     });
 
-    res.send(newTokens);
+    res.send();
   } catch (error) {
     console.log(error);
     next(new ErrorResponse(error, 401));
