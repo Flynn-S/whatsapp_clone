@@ -9,7 +9,6 @@ const MessageSchema = new Schema(
       trim: true,
     },
     senderId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    roomId: { type: Schema.Types.ObjectId, ref: "Room", required: true },
   },
   { timestamps: true }
 );

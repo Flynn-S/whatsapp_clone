@@ -1,10 +1,12 @@
 import mongoose from "mongoose";
-import { ChatHistorySchema } from "../chatHistory/schema.js";
+import { MessageSchema } from "./message.js";
 const { Schema, model } = mongoose;
 
 const RoomsSchema = new Schema({
-  users: [{ type: ObjectId, trim: true, required: true }],
-  chatHistory: [ChatHistorySchema],
+  users: [
+    { type: Schema.Types.ObjectId, ref: "User", trim: true, required: true },
+  ],
+  chatHistory: [MessageSchema],
 });
 
 export default model("Rooms", RoomsSchema);
