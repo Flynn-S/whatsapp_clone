@@ -19,11 +19,17 @@ app.use(cors());
 // app.use(cors(corsOptions));
 
 app.use(express.json());
+let onlineUsers = [];
 
 // ROUTES
 
+app.get('/online-users', (req, res) => {
+  res.send({ onlineUsers });
+});
+
 // ERROR HANDLERS
 app.use(routeNotFoundHandler);
+
 app.use(errorHandler);
 
 // PORT
@@ -41,8 +47,6 @@ mongoose
     })
   )
   .catch((err) => console.log(err));
-
-let onlineUsers = [];
 
 io.on('connection', (socket) => {
   console.log(socket.id);
@@ -79,10 +83,6 @@ io.on('connection', (socket) => {
 
     socket.broadcast.emit('newConnection');
   });
-});
-
-app.get('/online-users', (req, res) => {
-  res.send({ onlineUsers });
 });
 
 // const {addUser, removeUser, getUser, users, groups, addUserIntoGroup} = require('./Router/onlineUsers');
