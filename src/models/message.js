@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const { Schema, model } = mongoose;
+const { Schema } = mongoose;
 
 const MessageSchema = new Schema(
   {
@@ -13,4 +13,4 @@ const MessageSchema = new Schema(
   { timestamps: true }
 );
 
-export default model("Message", MessageSchema);
+export default MessageSchema;
