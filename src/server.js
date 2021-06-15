@@ -37,9 +37,10 @@ app.use(errorHandler);
 const port = process.env.PORT || 5000;
 
 io.on('connection', (socket) => {
-  console.log(socket.id);
+  console.log(socket);
 
   socket.join('main-room');
+  socket.join('secondary-room');
   console.log(socket.rooms);
 
   socket.on('setUsername', ({ username }) => {
