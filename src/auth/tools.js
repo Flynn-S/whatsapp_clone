@@ -1,24 +1,14 @@
 import jwt from "jsonwebtoken";
-import User from "../services/users/schema.js";
+import UserModel from "../models/user.js";
 
-export const authenticate = async (user) => {
-  const newAccessToken = await generateJWT({ _id: user._id });
-  const newRefreshToken = await generateRefreshJWT({ _id: user._id });
-
-  user.refreshToken = newRefreshToken;
-  await user.save();
-
-  return { token: newAccessToken, refreshToken: newRefreshToken };
-};
-
-const generateJWT = (payload) =>
+const generateJWT = (user) =>
   new Promise((res, rej) =>
     jwt.sign(
-      payload,
-      process.env.JWT_SECRET,
-      { expiresIn: "30s" },
-      (err, token) => {
-        if (err) rej(err);
+      user,
+      process.env.ACCESS_TOKEN_SECRET,
+      { expiresIn: "15m" },
+      (error, token) => {
+        if (error) rej(error);
         res(token);
       }
     )
@@ -26,20 +16,20 @@ const generateJWT = (payload) =>
 
 export const verifyJWT = (token) =>
   new Promise((res, rej) =>
-    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-      if (err) rej(err);
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (error, decoded) => {
+      if (error) rej(error);
       res(decoded);
     })
   );
 
-const generateRefreshJWT = (payload) =>
+const generateRefreshJWT = (user) =>
   new Promise((res, rej) =>
     jwt.sign(
-      payload,
+      user,
       process.env.REFRESH_TOKEN_SECRET,
-      { expiresIn: "1 week" },
-      (err, token) => {
-        if (err) rej(err);
+      { expiresIn: "7d" },
+      (error, token) => {
+        if (error) rej(error);
         res(token);
       }
     )
@@ -47,25 +37,32 @@ const generateRefreshJWT = (payload) =>
 
 const verifyRefreshToken = (token) =>
   new Promise((res, rej) =>
-    jwt.verify(token, process.env.REFRESH_TOKEN_SECRET, (err, decoded) => {
-      if (err) rej(err);
+    jwt.verify(token, process.env.REFRESH_TOKEN_SECRET, (error, decoded) => {
+      if (error) rej(error);
       res(decoded);
     })
   );
 
-export const refreshToken = async (oldRefreshToken) => {
+export const auth = async (user) => {
+  const newAccessToken = await generateJWT({ _id: user._id });
+  const newRefreshToken = await generateRefreshJWT({ _id: user._id });
+  user.refreshToken = newRefreshToken;
+  await user.save();
+  return { accessToken: newAccessToken, refreshToken: newRefreshToken };
+};
+
+export const refreshJWT = async (oldRefreshToken) => {
   const decoded = await verifyRefreshToken(oldRefreshToken);
 
-  const user = await User.findOne({ _id: decoded._id });
+  const user = await UserModel.findOne({ _id: decoded._id });
 
   if (!user) {
-    throw new Error("Access is forbidden");
+    throw new Error("Try again");
   }
+  const refreshToken = user.refreshToken;
 
-  const currentRefreshToken = user.refreshToken;
-
-  if (currentRefreshToken !== oldRefreshToken) {
-    throw new Error("Refresh token is wrong");
+  if (refreshToken !== oldRefreshToken) {
+    throw new Error("Login again");
   }
 
   const newAccessToken = await generateJWT({ _id: user._id });
@@ -73,6 +70,5 @@ export const refreshToken = async (oldRefreshToken) => {
 
   user.refreshToken = newRefreshToken;
   await user.save();
-
   return { token: newAccessToken, refreshToken: newRefreshToken };
 };
