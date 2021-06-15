@@ -17,7 +17,7 @@ import {
 
 const app = express();
 const server = createServer(app);
-const io = new Server(server, { allowEI03: true });
+const io = new Server(server, { allowEIO3: true });
 
 app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
 // app.use(cors(corsOptions));
@@ -34,21 +34,7 @@ app.use(routeNotFoundHandler);
 app.use(errorHandler);
 
 // PORT
-const port = process.env.PORT || 3001;
-
-mongoose
-  .connect(process.env.MONGODB_ADDRESS, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useFindAndModify: false,
-    useCreateIndex: true,
-  })
-  .then(
-    server.listen(port, () => {
-      console.log('Running on port', port);
-    })
-  )
-  .catch((err) => console.log(err));
+const port = process.env.PORT || 5000;
 
 io.on('connection', (socket) => {
   console.log(socket.id);
@@ -73,6 +59,7 @@ io.on('connection', (socket) => {
 
   socket.on('sendmessage', (message) => {
     // io.sockets.in("main-room").emit("message", message)
+    console.log(message);
     socket.to('main-room').emit('message', message);
 
     // saveMessageToDb(message)
@@ -81,12 +68,25 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     console.log('Disconnected socket with id ' + socket.id);
 
-    onlineUsers = onlineUsers.filter((user) => user.id !== socket.id);
+    // onlineUsers = onlineUsers.filter((user) => user.id !== socket.id);
 
     socket.broadcast.emit('newConnection');
   });
 });
 
+mongoose
+  .connect(process.env.MONGODB_ADDRESS, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    useFindAndModify: false,
+    useCreateIndex: true,
+  })
+  .then(
+    server.listen(port, () => {
+      console.log('Running on port', port);
+    })
+  )
+  .catch((err) => console.log(err));
 // const {addUser, removeUser, getUser, users, groups, addUserIntoGroup} = require('./Router/onlineUsers');
 // io.on('connection', socket => {
 
