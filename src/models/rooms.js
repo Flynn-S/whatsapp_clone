@@ -3,9 +3,7 @@ import { MessageSchema } from "./message.js";
 const { Schema, model } = mongoose;
 
 const RoomsSchema = new Schema({
-  users: [
-    { type: Schema.Types.ObjectId, ref: "User", trim: true, required: true },
-  ],
+  users: [{ type: Schema.Types.ObjectId, ref: "User", required: true }],
   chatHistory: [MessageSchema],
 });
 
