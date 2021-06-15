@@ -66,6 +66,15 @@ authRouter.post("/refreshToken", async (req, res, next) => {
 
   try {
     const newTokens = await refreshJWT(oldRefreshToken);
+    res.cookie("accessToken", newTokens.accessToken, {
+      sameSite: "lax",
+      httpOnly: true,
+    });
+    res.cookie("refreshToken", newTokens.refreshToken, {
+      sameSite: "lax",
+      httpOnly: true,
+    });
+
     res.send(newTokens);
   } catch (error) {
     console.log(error);
