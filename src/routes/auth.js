@@ -8,8 +8,8 @@ const authRouter = express.Router();
 
 authRouter.post("/register", async (req, res, next) => {
   try {
-    const newAuthor = await UserModel.create(req.body);
-    const { _id } = newAuthor;
+    const newUser = await UserModel.create(req.body);
+    const { _id } = newUser;
     const user = await UserModel.checkCredentials(
       req.body.email,
       req.body.password
