@@ -1,57 +1,57 @@
-import express from "express";
-import cors from "cors";
+import express from 'express';
+import cors from 'cors';
 
-import listEndpoints from "express-list-endpoints";
-import mongoose from "mongoose";
-import { createServer } from "http";
-import { Server } from "socket.io";
+import listEndpoints from 'express-list-endpoints';
+import mongoose from 'mongoose';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
 
 import {
   errorHandler,
   routeNotFoundHandler,
-} from "./middlewares/errors/errorHandling.js";
+} from './middlewares/errors/errorHandling.js';
 
-const server = express();
-const server = createServer(server);
+const app = express();
+const server = createServer(app);
 const io = new Server(server, { allowEI03: true });
 
-server.use(cors());
+app.use(cors());
 // app.use(cors(corsOptions));
 
-server.use(express.json());
+app.use(express.json());
 
 // ROUTES
 
 // ERROR HANDLERS
-server.use(routeNotFoundHandler);
-server.use(errorHandler);
+app.use(routeNotFoundHandler);
+app.use(errorHandler);
 
 // PORT
 const port = process.env.PORT || 3001;
 
 mongoose
-  .connect(process.env.MONGO_CONNECTION, {
+  .connect(process.env.MONGODB_ADDRESS, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useFindAndModify: false,
   })
   .then(
     server.listen(port, () => {
-      console.log("Running on port", port);
+      console.log('Running on port', port);
     })
   )
   .catch((err) => console.log(err));
 
 let onlineUsers = [];
 
-io.on("connection", (socket) => {
+io.on('connection', (socket) => {
   console.log(socket.id);
 
-  socket.join("main-room");
+  socket.join('main-room');
   console.log(socket.rooms);
 
-  socket.on("setUsername", ({ username }) => {
-    console.log("here");
+  socket.on('setUsername', ({ username }) => {
+    console.log('here');
     onlineUsers = onlineUsers
       .filter((user) => user.username !== username)
       .concat({
@@ -60,28 +60,28 @@ io.on("connection", (socket) => {
       });
     console.log(onlineUsers);
 
-    socket.emit("loggedin");
+    socket.emit('loggedin');
 
-    socket.broadcast.emit("newConnection");
+    socket.broadcast.emit('newConnection');
   });
 
-  socket.on("sendmessage", (message) => {
+  socket.on('sendmessage', (message) => {
     // io.sockets.in("main-room").emit("message", message)
-    socket.to("main-room").emit("message", message);
+    socket.to('main-room').emit('message', message);
 
     // saveMessageToDb(message)
   });
 
-  socket.on("disconnect", () => {
-    console.log("Disconnected socket with id " + socket.id);
+  socket.on('disconnect', () => {
+    console.log('Disconnected socket with id ' + socket.id);
 
     onlineUsers = onlineUsers.filter((user) => user.id !== socket.id);
 
-    socket.broadcast.emit("newConnection");
+    socket.broadcast.emit('newConnection');
   });
 });
 
-app.get("/online-users", (req, res) => {
+app.get('/online-users', (req, res) => {
   res.send({ onlineUsers });
 });
 
