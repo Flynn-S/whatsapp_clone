@@ -24,7 +24,6 @@ passport.use(
         } else {
           const newUser = {
             email: profile._json.email,
-            role: "User",
             googleId: profile.id,
           };
           const createdUser = new UserModel(newUser);
