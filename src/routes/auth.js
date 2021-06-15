@@ -15,7 +15,15 @@ authRouter.post("/register", async (req, res, next) => {
       req.body.password
     );
     const tokens = await auth(user);
-    res.status(201).send({ _id, tokens });
+    res.cookie("accessToken", tokens.accessToken, {
+      sameSite: "lax",
+      httpOnly: true,
+    });
+    res.cookie("refreshToken", tokens.refreshToken, {
+      sameSite: "lax",
+      httpOnly: true,
+    });
+    res.status(201).send(_id);
   } catch (error) {
     next(error);
   }
@@ -26,7 +34,15 @@ authRouter.post("/login", async (req, res, next) => {
     const { email, password } = req.body;
     const user = await UserModel.checkCredentials(email, password);
     const tokens = await auth(user);
-    res.send(tokens);
+    res.cookie("accessToken", tokens.accessToken, {
+      sameSite: "lax",
+      httpOnly: true,
+    });
+    res.cookie("refreshToken", tokens.refreshToken, {
+      sameSite: "lax",
+      httpOnly: true,
+    });
+    res.status(200).send();
   } catch (error) {
     console.log(error);
     next(error);
