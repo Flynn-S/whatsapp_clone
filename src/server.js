@@ -1,8 +1,12 @@
 import express from "express";
 import cors from "cors";
-
+import passport from "passport";
+import oauth from "./auth/oauth.js";
+import cookieParser from "cookie-parser";
+import authRouter from "./routes/auth.js";
 import listEndpoints from "express-list-endpoints";
 import mongoose from "mongoose";
+import { jwtAuth } from "./auth/index.js";
 import { createServer } from "http";
 import { Server } from "socket.io";
 
@@ -15,12 +19,15 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server, { allowEI03: true });
 
-app.use(cors());
+app.use(cors({ origin: "http://localhost:3000", credentials: true }));
 // app.use(cors(corsOptions));
 
 app.use(express.json());
-
+app.use(cookieParser());
+app.use(passport.initialize());
 // ROUTES
+
+app.use("/", authRouter);
 
 // ERROR HANDLERS
 app.use(routeNotFoundHandler);
