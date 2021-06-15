@@ -1,12 +1,8 @@
 import { Router } from "express";
 
-import User from "../models/user.model";
+import UserModel from "../models/user.js";
 
 const router = Router();
-
-router.post("/register"), (req, res, next) => {};
-
-router.post("/login"), (req, res, next) => {};
 
 router.post("/update"), (req, res, next) => {};
 

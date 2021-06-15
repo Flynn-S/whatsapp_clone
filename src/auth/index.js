@@ -1,54 +1,53 @@
-import atob from "atob"
+// import atob from "atob";
+import { verifyJWT } from "./tools.js";
+import UserModel from "../models/user.js";
 
-import UserModel from "../services/users/schema.js"
-
-export const basicAuthMiddleware = async (req, res, next) => {
-  if (!req.headers.authorization) {
-    // if you don't provide credentials you are getting a 401
-    const error = new Error("Please provide auth!")
-    error.httpStatusCode = 401
-    next(error)
-  } else {
-    const decoded = atob(req.headers.authorization.split(" ")[1])
-    const [email, password] = decoded.split(":")
-
-    // check the credentials
-
-    const user = await UserModel.checkCredentials(email, password)
-    if (user) {
-      req.user = user
-      next()
-    } else {
-      const error = new Error("Credentials are wrong")
-      error.httpStatusCode = 401
-      next(error)
+export const jwtAuth = async (req, res, next) => {
+  try {
+    // const token = req.headers.authorization.split(" ")[1];
+    const token = req.cookies.accessToken;
+    const decoded = await verifyJWT(token);
+    const user = await UserModel.findOne({
+      _id: decoded._id,
+    });
+    if (!user) {
+      throw new Error("Credentials are incorect");
     }
-
-    // const user = await UserModel.findOne({ email })
-    // if (user) {
-    //   // compare plainPW with hashedPW
-    //   const isMatch = await bcrypt.compare(password, user.password)
-    //   if (isMatch) {
-    //     next()
-    //   } else {
-    //     const error = new Error("Credentials are wrong!")
-    //     error.httpStatusCode = 401
-    //     next(error)
-    //   }
-    // } else {
-    //   const error = new Error("Credentials are wrong!")
-    //   error.httpStatusCode = 401
-    //   next(error)
-    // }
+    req.user = user;
+    next();
+  } catch (error) {
+    console.log(error);
+    next(error);
   }
-}
+};
+
+// export const basicAuthMiddleware = async (req, res, next) => {
+//   if (!req.headers.authorization) {
+//     const error = new Error("Please provide auth!");
+//     error.httpStatusCode = 401;
+//     next(error);
+//   } else {
+//     const decoded = atob(req.headers.authorization.split(" ")[1]);
+//     const [email, password] = decoded.split(":");
+
+//     const user = await AuthorSchema.checkCredentials(email, password);
+//     if (user) {
+//       req.user = user;
+//       next();
+//     } else {
+//       const error = new Error("Credentials are wrong");
+//       error.httpStatusCode = 401;
+//       next(error);
+//     }
+//   }
+// };
 
 export const adminOnly = (req, res, next) => {
-  if (req.user.role === "Admin") {
-    next()
+  if (req.user && req.user.role === "Admin") {
+    next();
   } else {
-    const error = new Error("Admin Only")
-    error.httpStatusCode = 403
-    next(error)
+    const error = new Error("Admin Only");
+    error.httpStatusCode = 403;
+    next(error);
   }
-}
+};
