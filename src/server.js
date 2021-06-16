@@ -36,12 +36,69 @@ app.use(errorHandler);
 // PORT
 const port = process.env.PORT || 5000;
 
+// we add functions in here from our ROUTES (users, rooms) so that we can use them in the socketIo functions below
+// Example: const { addUser, removeUser, getUser, users, groups, addUserIntoGroup} = require('./Router/onlineUsers');
+
+users = [];
+
 io.on("connection", (socket) => {
   console.log(socket.id);
-  socket.on("join server", (username) => {});
+  socket.on("join server", (username) => {
+    const user = {
+      username,
+      id: socket.id,
+    };
+    users.push(user);
+    io.emit("new user", Users);
+  });
 
-  socket.join("main-room");
-  socket.join("secondary-room");
+  // cb (callback) is defined and in the client side
+  // and invoked server side that fetches all the messages in that room
+  socket.on("join room", (roomId, cb) => {
+    socket.join(roomId);
+    cb(messages[roomId]);
+  });
+
+  socket.on(
+    "send message",
+    ({
+      messageText,
+      groupORsocketId,
+      senderUserId,
+      chatName,
+      isGroup,
+      createdAt,
+    }) => {
+      // io.sockets.in("main-room").emit("message", message)
+      if (isGroup) {
+        const payload = {
+          messageText,
+          chatName,
+          senderUserId,
+        };
+        socket.to(groupORsocketId).emit("new message", payload);
+      } else {
+        const payload = {
+          messageText,
+          chatName: senderUserId,
+          senderUserId,
+        };
+        socket.to(groupORsocketId).emit("new message", payload);
+      }
+
+      console.log(message);
+      socket.to("main-room").emit("message", message);
+
+      // saveMessageToDb(message)
+    }
+  );
+
+  // socket.on('startMessage', ({sender, recipient, token, senderEmail}) => {
+  //     startMessage(sender, token, recipient);
+  //     addUser({id: socket.id, email: senderEmail})
+  // })
+  // socket.join("main-room");
+  // socket.join("secondary-room");
   console.log(socket.rooms);
 
   socket.on("setUsername", ({ username }) => {
@@ -59,13 +116,13 @@ io.on("connection", (socket) => {
     socket.broadcast.emit("newConnection");
   });
 
-  socket.on("sendmessage", (message) => {
-    // io.sockets.in("main-room").emit("message", message)
-    console.log(message);
-    socket.to("main-room").emit("message", message);
+  // socket.on("sendmessage", (message) => {
+  //   // io.sockets.in("main-room").emit("message", message)
+  //   console.log(message);
+  //   socket.to("main-room").emit("message", message);
 
-    // saveMessageToDb(message)
-  });
+  //   // saveMessageToDb(message)
+  // });
 
   socket.on("disconnect", () => {
     console.log("Disconnected socket with id " + socket.id);
