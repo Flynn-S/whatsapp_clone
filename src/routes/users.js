@@ -1,22 +1,33 @@
-import { Router } from 'express';
+import { Router } from "express";
 
-import User from '../models/user.js';
+import UserModel from "../models/user.js";
+import RoomModel from "../models/rooms.js";
 
 const router = Router();
 
-router.post('/update'), (req, res, next) => {};
+router.get("/", async (req, res, next) => {
+  try {
+    const query = req.query.email;
 
-router.get('/'), (req, res, next) => {};
+    const findUser = await UserModel.find({
+      email: { $regex: new RegExp(query, "i") },
+    }).sort({ email: 1 });
+    res.send(findUser);
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+});
+// router.get("/:id", async (req, res, next) => {});
 
-router.get('/:id'), (req, res, next) => {};
+router.get("/rooms", async (req, res, next) => {
+  const id = req.user._id;
 
-router.get('/:id/rooms'),
-  (req, res, next) => {
-    const id = req.params.id;
+  // if (id === ) return
 
-    // if (id === ) return
+  const rooms = await RoomModel.find({ usersId: id }).populate("usersId");
 
-    const rooms = RoomModel.find({ userId: id });
-  };
+  res.send(rooms);
+});
 
 export default router;
