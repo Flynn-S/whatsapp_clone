@@ -4,6 +4,8 @@ import passport from 'passport';
 import oauth from './auth/oauth.js';
 import cookieParser from 'cookie-parser';
 import authRouter from './routes/auth.js';
+import roomsRoutes from './routes/rooms.js';
+import usersRoutes from './routes/users.js';
 import listEndpoints from 'express-list-endpoints';
 import mongoose from 'mongoose';
 import { jwtAuth } from './auth/index.js';
@@ -28,6 +30,10 @@ app.use(passport.initialize());
 // ROUTES
 
 app.use('/', authRouter);
+
+app.use('/rooms', jwtAuth, roomsRoutes);
+
+app.use('/users', jwtAuth, usersRoutes);
 
 // ERROR HANDLERS
 app.use(routeNotFoundHandler);
