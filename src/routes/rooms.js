@@ -5,16 +5,26 @@ import RoomsModel from "../models/rooms.js";
 const router = Router();
 
 router.get("/", async (req, res, next) => {
-  const roomse = await RoomsModel.find({});
-  res.send(roomse);
+  try {
+    const roomse = await RoomsModel.find({});
+    res.send(roomse);
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
 });
 
 //create a new room
 router.post("/", async (req, res, next) => {
-  const newRoom = await RoomsModel.create({
-    usersId: [req.body.user, req.user._id],
-  });
-  res.send(newRoom);
+  try {
+    const newRoom = await RoomsModel.create({
+      usersId: [req.body.user, req.user._id],
+    });
+    res.send(newRoom);
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
 });
 
 //add new partecipant to a room

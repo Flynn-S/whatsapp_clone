@@ -53,7 +53,9 @@ authRouter.post("/logout", jwtAuth, async (req, res, next) => {
   try {
     req.user.refreshToken = null;
     await req.user.save();
-    res.send();
+    res.clearCookie("accessToken");
+    res.clearCookie("refreshToken");
+    res.status(200).send();
   } catch (error) {
     next(error);
   }

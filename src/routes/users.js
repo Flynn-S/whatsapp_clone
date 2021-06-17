@@ -21,13 +21,17 @@ router.get("/", async (req, res, next) => {
 // router.get("/:id", async (req, res, next) => {});
 
 router.get("/rooms", async (req, res, next) => {
-  const id = req.user._id;
+  try {
+    const id = req.user._id;
 
-  // if (id === ) return
+    // if (id === ) return
 
-  const rooms = await RoomModel.find({ usersId: id }).populate("usersId");
+    const rooms = await RoomModel.find({ usersId: id }).populate("usersId");
 
-  res.send(rooms);
+    res.send(rooms);
+  } catch (error) {
+    next(error);
+  }
 });
 
 export default router;
