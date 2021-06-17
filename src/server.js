@@ -3,7 +3,12 @@ import cors from "cors";
 import passport from "passport";
 import oauth from "./auth/oauth.js";
 import cookieParser from "cookie-parser";
+
+//ROUTES
 import authRouter from "./routes/auth.js";
+import roomsRouter from "./routes/rooms.js";
+import usersRouter from "./routes/users.js";
+
 import listEndpoints from "express-list-endpoints";
 import mongoose from "mongoose";
 import { jwtAuth } from "./auth/index.js";
@@ -28,6 +33,8 @@ app.use(passport.initialize());
 // ROUTES
 
 app.use("/", authRouter);
+app.use("/rooms", roomsRouter);
+app.use("/users", usersRouter);
 
 // ERROR HANDLERS
 app.use(routeNotFoundHandler);
@@ -38,18 +45,56 @@ const port = process.env.PORT || 5000;
 
 // we add functions in here from our ROUTES (users, rooms) so that we can use them in the socketIo functions below
 // Example: const { addUser, removeUser, getUser, users, groups, addUserIntoGroup} = require('./Router/onlineUsers');
+let onlineUsers = [];
+const activeSockets = {};
 
-users = [];
+const { addUser } = require("./users"); // THIS IS WHERE I THINK WE SHOULD BE ABLE TO ADD DATABASE FUNCTIONS THAT CAN SAVE THINGS TO THE DB ON THE CORRECT ROUTE
 
 io.on("connection", (socket) => {
+  // SERVER IS RUNNING
   console.log(socket.id);
+
+  // this is the same as the USER login below just different method..
   socket.on("join server", (username) => {
+    socket.emit("message", "Welcome to Whatsapp!");
+
     const user = {
       username,
       id: socket.id,
     };
-    users.push(user);
-    io.emit("new user", Users);
+
+    onlineUsers.push(user);
+
+    io.emit("new user", `Online Users: ${onlineUsers}`);
+  });
+
+  // ON USER LOGIN - RECIEVE USER ID FROM DB USE IT TO SEND AN EVENT TO SOCKET WITH THE ID...
+  socket.on("didConnect", (userId) => {
+    //activeSockets.push({socket, userId})
+    activeSockets[userId] = socket;
+  });
+
+  //APPEND's THE SOCKET OBJECT TO activeSockets.userId which includes the socket.id
+
+  // FRONTEND
+  // const list = ['ardi', 'mihai', 'flynn']
+
+  // POST newRoom with list
+  // const {roomId} = response
+
+  // list.forEach(uid => socket.emit("joinRoom", {userId: uid, roomId}))
+
+  //FE END
+
+  socket.on("joinRoom", ({ userId, roomId }) => {
+    //const socket = activeSockets.find( s => s.userId === userId).socket
+    //socket.join(roomId)
+
+    activeSockets[userId].join(roomId);
+  });
+
+  socket.on("joinRooms", (roomIds) => {
+    roomIds.foreach((r) => socket.join(r));
   });
 
   // cb (callback) is defined and in the client side
@@ -71,25 +116,34 @@ io.on("connection", (socket) => {
     }) => {
       // io.sockets.in("main-room").emit("message", message)
       if (isGroup) {
-        const payload = {
+        const messagePayload = {
           messageText,
           chatName,
           senderUserId,
+          createdAt,
         };
-        socket.to(groupORsocketId).emit("new message", payload);
+        socket
+          .to(groupORsocketId)
+          .emit("new message", messagePayload, { roomId });
       } else {
-        const payload = {
+        const messagePayload = {
           messageText,
           chatName: senderUserId,
           senderUserId,
+          createdAt,
         };
-        socket.to(groupORsocketId).emit("new message", payload);
+
+        // save to DB
+        //   roomsRouter.post("/:roomId/message", async (req, res, next) => {
+        //     const room = await RoomsModel.findOneAndUpdate(
+        //       { _id: req.params.roomId },
+        //       { $push: { chatHistory: req.body } },    where req.body is messagePayload
+        //       { new: true, runValidators: true }
+        //     );
+        //   });
+
+        socket.to(groupORsocketId).emit("new message", messagePayload);
       }
-
-      console.log(message);
-      socket.to("main-room").emit("message", message);
-
-      // saveMessageToDb(message)
     }
   );
 
@@ -99,22 +153,22 @@ io.on("connection", (socket) => {
   // })
   // socket.join("main-room");
   // socket.join("secondary-room");
-  console.log(socket.rooms);
+  // console.log(socket.rooms);
 
-  socket.on("setUsername", ({ username }) => {
-    console.log("here");
-    onlineUsers = onlineUsers
-      .filter((user) => user.username !== username)
-      .concat({
-        username,
-        id: socket.id,
-      });
-    console.log(onlineUsers);
+  // socket.on("setUsername", ({ username }) => {
+  //   console.log("here");
+  //   onlineUsers = onlineUsers
+  //     .filter((user) => user.username !== username)
+  //     .concat({
+  //       username,
+  //       id: socket.id,
+  //     });
+  //   console.log(onlineUsers);
 
-    socket.emit("loggedin");
+  //   socket.emit("loggedin");
 
-    socket.broadcast.emit("newConnection");
-  });
+  //   socket.broadcast.emit("newConnection");
+  // });
 
   // socket.on("sendmessage", (message) => {
   //   // io.sockets.in("main-room").emit("message", message)
@@ -146,6 +200,7 @@ mongoose
     })
   )
   .catch((err) => console.log(err));
+
 // const {addUser, removeUser, getUser, users, groups, addUserIntoGroup} = require('./Router/onlineUsers');
 // io.on('connection', socket => {
 

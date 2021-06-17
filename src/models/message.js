@@ -13,4 +13,4 @@ const MessageSchema = new Schema(
   { timestamps: true }
 );
 
-export default MessageSchema;
+export default model("Messages", MessageSchema);
