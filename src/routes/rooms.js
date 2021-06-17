@@ -1,4 +1,4 @@
-import { Router } from "express";
+import express from "express";
 
 import RoomsModel from "../models/rooms.js";
 
@@ -11,7 +11,7 @@ roomsRouter.get("/", async (req, res, next) => {
 //create a new room
 roomsRouter.post("/", async (req, res, next) => {
   const newRoom = await RoomsModel.create({
-    usersId: [req.body.user, req.user._id],
+    usersId: [...req.body.users, req.user._id],
   });
   res.send(newRoom);
 });

@@ -48,7 +48,7 @@ const port = process.env.PORT || 5000;
 let onlineUsers = [];
 const activeSockets = {};
 
-const { addUser } = require("./users"); // THIS IS WHERE I THINK WE SHOULD BE ABLE TO ADD DATABASE FUNCTIONS THAT CAN SAVE THINGS TO THE DB ON THE CORRECT ROUTE
+// const { addUser } = require("./users"); // THIS IS WHERE I THINK WE SHOULD BE ABLE TO ADD DATABASE FUNCTIONS THAT CAN SAVE THINGS TO THE DB ON THE CORRECT ROUTE
 
 io.on("connection", (socket) => {
   // SERVER IS RUNNING
