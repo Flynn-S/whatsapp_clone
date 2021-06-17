@@ -3,6 +3,7 @@ import cors from 'cors';
 import passport from 'passport';
 import oauth from './auth/oauth.js';
 import cookieParser from 'cookie-parser';
+import morgan from 'morgan';
 import authRouter from './routes/auth.js';
 import roomsRoutes from './routes/rooms.js';
 import usersRoutes from './routes/users.js';
@@ -28,6 +29,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(passport.initialize());
 // ROUTES
+app.use(morgan('dev'));
 
 app.use('/', authRouter);
 
@@ -80,7 +82,7 @@ io.on('connection', (socket) => {
     socket.broadcast.emit('newConnection');
   });
 });
-
+console.table(listEndpoints(app));
 mongoose
   .connect(process.env.MONGODB_ADDRESS, {
     useNewUrlParser: true,
