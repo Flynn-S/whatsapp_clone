@@ -31,7 +31,7 @@ app.use(passport.initialize());
 // ROUTES
 app.use(morgan('dev'));
 
-app.use('/', authRouter);
+app.use('/', jwtAuth, authRouter);
 
 app.use('/rooms', jwtAuth, roomsRoutes);
 
