@@ -104,6 +104,7 @@ io.on("connection", (socket) => {
     cb(messages[roomId]);
   });
 
+  // socket.on('message', formatMessage({userName}, {userId},))
   socket.on(
     "send message",
     ({
