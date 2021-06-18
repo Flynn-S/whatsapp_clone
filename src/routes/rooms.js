@@ -43,7 +43,7 @@ router.put("/:roomId", async (req, res, next) => {
 
 router.get("/:roomId", async (req, res, next) => {
   // participants, details
-  const room = await RoomsModel.findById(req.params.id).populate("usersId");
+  const room = await RoomsModel.findById(req.params.roomId).populate("usersId");
 
   res.send(room);
 });
