@@ -42,7 +42,7 @@ authRouter.post('/login', async (req, res, next) => {
       sameSite: 'lax',
       httpOnly: true,
     });
-    res.status(200).send(req.user);
+    res.status(200).send();
   } catch (error) {
     console.log(error);
     next(error);
