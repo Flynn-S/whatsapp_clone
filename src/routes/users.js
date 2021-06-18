@@ -49,7 +49,9 @@ router.get("/rooms", async (req, res, next) => {
 
     // if (id === ) return
 
-    const rooms = await RoomModel.find({ usersId: id }).populate("usersId");
+    const rooms = await RoomModel.find({ usersId: id })
+      .populate("usersId")
+      .populate("chatHistory.senderId");
 
     res.send(rooms);
   } catch (error) {
